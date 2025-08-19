@@ -1,10 +1,11 @@
 import mongoose from "mongoose";
 import Business from "./models/Business-occupancy.js";
+import Account from "./models/Account.js";
 import dotenv from "dotenv";
 
 dotenv.config();
 
-const generateBusinessPermits = (count) => {
+const generateBusinessPermits = (count, userId) => {
   const evaluators = [
     "Engr. Maria Santos",
     "Engr. Juan Dela Cruz",
@@ -76,30 +77,24 @@ const generateBusinessPermits = (count) => {
   const usedCombinations = new Set();
 
   for (let i = 0; i < count; i++) {
-    const dateReceived = randomDate(new Date('2025-01-01'), new Date('2025-05-11'));
-    
-   
+    const dateReceived = randomDate(new Date('2024-01-01'), new Date('2028-12-31'));
     const dateReleased = null;
-    
-
     const owner_establishment = establishments[Math.floor(Math.random() * establishments.length)];
     const location = locations[Math.floor(Math.random() * locations.length)];
-    
-    const controlNo = `BP-2025-${(i + 1).toString().padStart(5, '0')}`;
-    
+    const controlNo = `BP-${dateReceived.getFullYear()}-${(i + 1).toString().padStart(5, '0')}`;
     const combination = `${owner_establishment}-${location}-${controlNo}`;
-    
 
     if (usedCombinations.has(combination)) {
       i--;
       continue;
     }
-    
+
     usedCombinations.add(combination);
-    
+
     const fcode_fee = Math.floor(2000 + Math.random() * 8000).toString();
-    
+
     const permit = {
+      user: userId,
       date_received: formatDate(dateReceived),
       owner_establishment,
       location,
@@ -110,27 +105,21 @@ const generateBusinessPermits = (count) => {
       control_no: controlNo,
       status: "pending"
     };
-    
+
     permits.push(permit);
   }
-  
+
   return permits;
 };
 
 const seedDatabase = async () => {
   try {
     await mongoose.connect(process.env.MONGODB_URI);
-
-    console.log("Connected to MongoDB");
-
-  
+    const account = await Account.findOne({ email: "admin@gmail.com" });
+    if (!account) throw new Error("No user found with email admin@gmail.com");
     await Business.deleteMany();
-    
-
-    const pendingPermits = generateBusinessPermits(500);
-    
+    const pendingPermits = generateBusinessPermits(500, account._id);
     await Business.insertMany(pendingPermits);
-
     console.log(`Successfully seeded ${pendingPermits.length} pending business permit records!`);
     process.exit();
   } catch (error) {

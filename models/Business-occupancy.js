@@ -1,6 +1,11 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
-const BusinessSchema = new mongoose.Schema({
+const BusinessOccupancySchema = new mongoose.Schema({
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Account",
+    required: true
+  },
   date_received: {
     type: String,
     default: null
@@ -37,9 +42,29 @@ const BusinessSchema = new mongoose.Schema({
     type: String,
     enum: ['pending', 'approved', 'rejected'],
     default: 'pending'
+  },
+  payment_status_business: {
+    type: String,
+    enum: ['paid', 'not_paid'],
+    default: 'not_paid'
+  },
+  last_payment_date_business: {
+    type: String,
+    default: null
+  },
+  payment_status_occupancy: {
+    type: String,
+    enum: ['paid', 'not_paid'],
+    default: 'not_paid'
+  },
+  last_payment_date_occupancy: {
+    type: String,
+    default: null
   }
+}, {
+  timestamps: true
 });
 
-const Business = mongoose.model('Business', BusinessSchema);
+const BusinessOccupancy = mongoose.model("BusinessOccupancy", BusinessOccupancySchema);
 
-export default Business;
+export default BusinessOccupancy;

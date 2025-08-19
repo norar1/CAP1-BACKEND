@@ -11,9 +11,15 @@ const AccountSchema = new mongoose.Schema({
   password: {
     type: String,
     required: true
+  },
+  role: {
+    type: String,
+    enum: ["admin", "user"],
+    default: "user",
+    required: true
   }
 });
 
-const Accounnt = mongoose.model("Account", AccountSchema)
+const Account = mongoose.model("Account", AccountSchema);
 
-export default Accounnt;
+export default Account;
