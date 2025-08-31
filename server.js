@@ -4,6 +4,7 @@ import { connectDB } from './lib/db.js';
 import FireStationBusinessRoute from "./routes/firestation.js";
 import AccountRoute from "./routes/account.js";
 import FireStationBusinessfsicRoute from "./routes/businessfsic.js";
+import FirecasesRoute from "./routes/FireCases.js"
 import cors from "cors";
 
 dotenv.config();
@@ -23,6 +24,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/api/firestation/business", FireStationBusinessRoute);
 app.use("/api/account/firestation", AccountRoute);
 app.use("/api/businessfsic/data", FireStationBusinessfsicRoute)
+app.use ("/api/firecases", FirecasesRoute);
 
 const PORT = process.env.PORT || 5000;
 
