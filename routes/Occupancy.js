@@ -6,12 +6,9 @@ import {
   DeletePermit,
   SearchPermits,
   UpdateStatus,
-  UpdateBusinessPaymentStatus,
-  UpdateOccupancyPaymentStatus,
-  GetPermitsByBusinessPaymentStatus,
-  GetPermitsByOccupancyPaymentStatus,
+  UpdatePaymentStatus,
   GetPermitsByStatus,
-} from "../controller/Business-Occupancy.js";
+} from "../controller/Occupancy.js";
 import auth from "../middleware/auth.js";
 
 const router = express.Router();
@@ -28,13 +25,7 @@ router.get("/search", SearchPermits);
 
 router.put("/UpdateStatus/:id", UpdateStatus);
 
-router.put("/UpdateBusinessPaymentStatus/:id", UpdateBusinessPaymentStatus);
-
-router.put("/UpdateOccupancyPaymentStatus/:id", UpdateOccupancyPaymentStatus);
-
-router.get("/GetPermitsByBusinessPaymentStatus/:payment_status_business", GetPermitsByBusinessPaymentStatus);
-
-router.get("/GetPermitsByOccupancyPaymentStatus/:payment_status_occupancy", GetPermitsByOccupancyPaymentStatus);
+router.put("/UpdatePaymentStatus/:id", UpdatePaymentStatus);
 
 router.get("/GetPermitsByStatus/:status", GetPermitsByStatus);
 

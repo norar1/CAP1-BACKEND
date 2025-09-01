@@ -1,10 +1,11 @@
 import express from "express";
 import dotenv from "dotenv";
 import { connectDB } from './lib/db.js';
-import FireStationBusinessRoute from "./routes/firestation.js";
 import AccountRoute from "./routes/account.js";
 import FireStationBusinessfsicRoute from "./routes/businessfsic.js";
-import FirecasesRoute from "./routes/FireCases.js"
+import BuildingRoute from "./routes/Building.js";
+import OccupancyRoute from "./routes/Occupancy.js";
+import FireCasesRoute from "./routes/FireCases.js"
 import cors from "cors";
 
 dotenv.config();
@@ -21,10 +22,11 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use("/api/firestation/business", FireStationBusinessRoute);
 app.use("/api/account/firestation", AccountRoute);
-app.use("/api/businessfsic/data", FireStationBusinessfsicRoute)
-app.use ("/api/firecases", FirecasesRoute);
+app.use("/api/businessfsic/data", FireStationBusinessfsicRoute);
+app.use("/api/building", BuildingRoute);
+app.use("/api/occupancy", OccupancyRoute);
+app.use("/api/firecases", FireCasesRoute);
 
 const PORT = process.env.PORT || 5000;
 

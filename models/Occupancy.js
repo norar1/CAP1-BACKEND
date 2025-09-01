@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const BusinessOccupancySchema = new mongoose.Schema({
+const OccupancySchema = new mongoose.Schema({
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Account",
@@ -14,7 +14,7 @@ const BusinessOccupancySchema = new mongoose.Schema({
     type: String,
     default: null
   },
-  location: {
+  address: {
     type: String,
     default: null
   },
@@ -26,11 +26,11 @@ const BusinessOccupancySchema = new mongoose.Schema({
     type: String,
     default: null
   },
-  evaluated_by: {
+  inspected_by: {
     type: String,
     default: null
   },
-  date_released_fsec: {
+  date_released_fsic: {
     type: String,
     default: null
   },
@@ -43,28 +43,27 @@ const BusinessOccupancySchema = new mongoose.Schema({
     enum: ['pending', 'approved', 'rejected'],
     default: 'pending'
   },
-  payment_status_business: {
+  payment_status: {
     type: String,
     enum: ['paid', 'not_paid'],
     default: 'not_paid'
   },
-  last_payment_date_business: {
+  last_payment_date: {
     type: String,
     default: null
   },
-  payment_status_occupancy: {
-    type: String,
-    enum: ['paid', 'not_paid'],
-    default: 'not_paid'
-  },
-  last_payment_date_occupancy: {
+  inspection_date: {
     type: String,
     default: null
+  },
+  certificate_fee: {
+    type: Number,
+    default: 0
   }
 }, {
   timestamps: true
 });
 
-const BusinessOccupancy = mongoose.model("BusinessOccupancy", BusinessOccupancySchema);
+const Occupancy = mongoose.model("Occupancy", OccupancySchema);
 
-export default BusinessOccupancy;
+export default Occupancy;
