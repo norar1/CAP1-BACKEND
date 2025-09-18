@@ -6,6 +6,10 @@ export const CreateAcc = async (req, res) => {
   try {
     const { email, password, role } = req.body;
 
+    if (!email || !password) {
+      return res.status(400).json({ message: "Email and password are required" });
+    }
+
     const existingAccount = await Account.findOne({ email });
     if (existingAccount) {
       return res.status(400).json({ message: "Email already in use" });
@@ -31,6 +35,7 @@ export const CreateAcc = async (req, res) => {
       }
     });
   } catch (error) {
+    console.error("Create account error:", error);
     res.status(500).json({ message: "Server error" });
   }
 };
@@ -40,6 +45,7 @@ export const GetAcc = async (req, res) => {
     const accounts = await Account.find().select("-password");
     res.status(200).json(accounts);
   } catch (error) {
+    console.error("Get accounts error:", error);
     res.status(500).json({ message: "Server error" });
   }
 };
@@ -71,6 +77,7 @@ export const UdpateAcc = async (req, res) => {
       account: updatedAccount
     });
   } catch (error) {
+    console.error("Update account error:", error);
     res.status(500).json({ message: "Server error" });
   }
 };
@@ -85,6 +92,7 @@ export const DeleteAcc = async (req, res) => {
 
     res.status(200).json({ message: "Account deleted successfully" });
   } catch (error) {
+    console.error("Delete account error:", error);
     res.status(500).json({ message: "Server error" });
   }
 };
@@ -92,6 +100,10 @@ export const DeleteAcc = async (req, res) => {
 export const LoginAcc = async (req, res) => {
   try {
     const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ message: "Email and password are required" });
+    }
 
     const account = await Account.findOne({ email });
     if (!account) {
@@ -101,6 +113,11 @@ export const LoginAcc = async (req, res) => {
     const isMatch = await bcrypt.compare(password, account.password);
     if (!isMatch) {
       return res.status(401).json({ message: "Invalid credentials" });
+    }
+
+    if (!process.env.JWT_SECRET) {
+      console.error("JWT_SECRET not found in environment variables");
+      return res.status(500).json({ message: "Server configuration error" });
     }
 
     const token = jwt.sign(
@@ -119,6 +136,7 @@ export const LoginAcc = async (req, res) => {
       }
     });
   } catch (err) {
+    console.error("Login error:", err);
     res.status(500).json({ message: "Server error" });
   }
 };
@@ -127,6 +145,8 @@ export const LogoutAcc = async (req, res) => {
   try {
     res.status(200).json({ message: "Logout successful" });
   } catch (err) {
+    console.error("Logout error:", err);
     res.status(500).json({ message: "Server error" });
   }
 };
+//lol
