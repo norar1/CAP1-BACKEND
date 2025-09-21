@@ -13,7 +13,7 @@ dotenv.config()
 const app = express()
 
 app.use(cors({
-  origin: ["https://dapper-duckanoo-0a471c.netlify.app", "http://localhost:3000"],
+  origin: ["https://dapper-duckanoo-0a471c.netlify.app", "http://localhost:5173"],
   credentials: true,
   methods: ["GET","POST","PUT","DELETE"],
   allowedHeaders: ["Content-Type","Authorization"]
