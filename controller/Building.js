@@ -1,22 +1,10 @@
 import mongoose from 'mongoose';
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 import Building from '../models/Building.js';
 import dotenv from 'dotenv';
 dotenv.config();
 
-const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 465,
-  secure: true,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASSWORD
-  }
-});
-
-transporter.verify()
-  .then(() => console.log('Email server is ready to send messages'))
-  .catch(err => console.log('Email verification failed (non-critical):', err.message));
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 const getBuildingEmailTemplate = (status, permitData) => {
   const { owner_establishment, control_no, location } = permitData;
@@ -99,15 +87,13 @@ const getBuildingEmailTemplate = (status, permitData) => {
 const sendStatusEmail = async (userEmail, status, permitData) => {
   try {
     const emailTemplate = getBuildingEmailTemplate(status, permitData);
-    const mailOptions = {
-      from: `"Fire Station Admin" <${process.env.EMAIL_USER}>`,
+    const data = await resend.emails.send({
+      from: process.env.EMAIL_FROM || 'onboarding@resend.dev',
       to: userEmail,
       subject: emailTemplate.subject,
       html: emailTemplate.html
-    };
-    
-    const result = await transporter.sendMail(mailOptions);
-    return { success: true, messageId: result.messageId };
+    });
+    return { success: true, messageId: data.id };
   } catch (error) {
     return { success: false, error: error.message };
   }

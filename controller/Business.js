@@ -1,22 +1,10 @@
 import mongoose from 'mongoose';
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 import BusinessPermit from '../models/Business-Fsic.js';
 import dotenv from 'dotenv';
 dotenv.config();
 
-const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 465,
-  secure: true,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASSWORD
-  }
-});
-
-transporter.verify()
-  .then(() => console.log('Email server is ready to send messages'))
-  .catch(err => console.log('Email verification failed (non-critical):', err.message));
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 const getEmailTemplate = (status, permitData) => {
   const { owner, business_name, or_number } = permitData;
@@ -99,15 +87,13 @@ const getEmailTemplate = (status, permitData) => {
 const sendStatusEmail = async (userEmail, status, permitData) => {
   try {
     const emailTemplate = getEmailTemplate(status, permitData);
-    const mailOptions = {
-      from: `"Business Permit Admin" <${process.env.EMAIL_USER}>`,
+    const data = await resend.emails.send({
+      from: process.env.EMAIL_FROM || 'onboarding@resend.dev',
       to: userEmail,
       subject: emailTemplate.subject,
       html: emailTemplate.html
-    };
-    
-    const result = await transporter.sendMail(mailOptions);
-    return { success: true, messageId: result.messageId };
+    });
+    return { success: true, messageId: data.id };
   } catch (error) {
     return { success: false, error: error.message };
   }
@@ -173,7 +159,6 @@ export const CreatePermit = async (req, res) => {
     await newPermit.save();
     res.status(201).json({ message: "Business permit created successfully!", success: true });
   } catch (error) {
-    console.error("CreatePermit Error:", error);
     res.status(500).json({ message: "Error creating permit", error: error.message });
   }
 };
@@ -240,7 +225,6 @@ export const UpdatePermit = async (req, res) => {
     await permit.save();
     res.status(200).json({ message: "Permit updated successfully!", success: true });
   } catch (error) {
-    console.error("UpdatePermit Error:", error);
     res.status(500).json({ message: "Error updating permit", error: error.message });
   }
 };
@@ -294,7 +278,6 @@ export const UpdateStatus = async (req, res) => {
       emailQueued
     });
   } catch (error) {
-    console.error("UpdateStatus Error:", error);
     res.status(500).json({ message: "Error updating permit status", error: error.message });
   }
 };
@@ -315,7 +298,6 @@ export const DeletePermit = async (req, res) => {
 
     res.status(200).json({ message: "Permit deleted successfully!", success: true });
   } catch (error) {
-    console.error("DeletePermit Error:", error);
     res.status(500).json({ message: "Error deleting permit", error: error.message });
   }
 };
@@ -330,7 +312,6 @@ export const GetPermit = async (req, res) => {
 
     res.status(200).json({ permits, success: true });
   } catch (error) {
-    console.error("GetPermit Error:", error);
     res.status(500).json({ message: "Error retrieving permits", error: error.message });
   }
 };
@@ -365,7 +346,6 @@ export const SearchPermits = async (req, res) => {
     
     res.status(200).json({ permits, success: true });
   } catch (error) {
-    console.error("SearchPermits Error:", error);
     res.status(500).json({ message: "Error searching permits", error: error.message });
   }
 };
@@ -386,7 +366,6 @@ export const GetPermitsByStatus = async (req, res) => {
     
     res.status(200).json({ permits, success: true });
   } catch (error) {
-    console.error("GetPermitsByStatus Error:", error);
     res.status(500).json({ message: "Error retrieving permits by status", error: error.message });
   }
 };
