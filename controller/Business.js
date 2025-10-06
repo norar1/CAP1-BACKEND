@@ -88,7 +88,7 @@ const sendStatusEmail = async (userEmail, status, permitData) => {
   try {
     const emailTemplate = getEmailTemplate(status, permitData);
     const data = await resend.emails.send({
-      from: process.env.EMAIL_FROM || 'onboarding@resend.dev',
+      from: 'onboarding@norardavid.xyz',
       to: userEmail,
       subject: emailTemplate.subject,
       html: emailTemplate.html
