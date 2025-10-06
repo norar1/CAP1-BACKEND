@@ -5,26 +5,18 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
   host: 'smtp.gmail.com',
-  port: 25,
-  secure: false,
+  port: 465,
+  secure: true,
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASSWORD
-  },
-  tls: {
-    rejectUnauthorized: false
   }
 });
 
-transporter.verify((error, success) => {
-  if (error) {
-    console.log('Email transporter verification failed:', error);
-  } else {
-    console.log('Email server is ready to send messages');
-  }
-});
+transporter.verify()
+  .then(() => console.log('Email server is ready to send messages'))
+  .catch(err => console.log('Email verification failed (non-critical):', err.message));
 
 const getBuildingEmailTemplate = (status, permitData) => {
   const { owner_establishment, control_no, location } = permitData;
@@ -257,6 +249,7 @@ export const UpdateStatus = async (req, res) => {
     permit.status = status;
     await permit.save();
 
+    let emailQueued = false;
     if (permit.user && permit.user.email) {
       const permitData = {
         owner_establishment: permit.owner_establishment,
@@ -264,13 +257,23 @@ export const UpdateStatus = async (req, res) => {
         location: permit.location
       };
 
-      const emailResult = await sendStatusEmail(permit.user.email, status, permitData);
+      sendStatusEmail(permit.user.email, status, permitData)
+        .then(result => {
+          if (result.success) {
+            console.log(`Email sent successfully to ${permit.user.email}`);
+          } else {
+            console.log(`Email failed to send: ${result.error}`);
+          }
+        })
+        .catch(err => console.log('Email sending error:', err.message));
+      
+      emailQueued = true;
     }
 
     res.status(200).json({ 
       message: `Building permit status updated to ${status}`, 
       success: true,
-      emailSent: permit.user?.email ? true : false
+      emailQueued
     });
   } catch (error) {
     res.status(500).json({ message: "Error updating permit status", error: error.message });

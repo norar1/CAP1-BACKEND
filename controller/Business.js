@@ -5,26 +5,18 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
   host: 'smtp.gmail.com',
-  port: 25,
-  secure: false,
+  port: 465,
+  secure: true,
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASSWORD
-  },
-  tls: {
-    rejectUnauthorized: false
   }
 });
 
-transporter.verify((error, success) => {
-  if (error) {
-    console.log('Email transporter verification failed:', error);
-  } else {
-    console.log('Email server is ready to send messages');
-  }
-});
+transporter.verify()
+  .then(() => console.log('Email server is ready to send messages'))
+  .catch(err => console.log('Email verification failed (non-critical):', err.message));
 
 const getEmailTemplate = (status, permitData) => {
   const { owner, business_name, or_number } = permitData;
@@ -117,7 +109,6 @@ const sendStatusEmail = async (userEmail, status, permitData) => {
     const result = await transporter.sendMail(mailOptions);
     return { success: true, messageId: result.messageId };
   } catch (error) {
-    console.error('Error sending email:', error);
     return { success: false, error: error.message };
   }
 };
@@ -276,6 +267,7 @@ export const UpdateStatus = async (req, res) => {
     permit.status = status;
     await permit.save();
 
+    let emailQueued = false;
     if (permit.user && permit.user.email) {
       const permitData = {
         owner: permit.owner,
@@ -283,19 +275,23 @@ export const UpdateStatus = async (req, res) => {
         or_number: permit.or_number
       };
 
-      const emailResult = await sendStatusEmail(permit.user.email, status, permitData);
+      sendStatusEmail(permit.user.email, status, permitData)
+        .then(result => {
+          if (result.success) {
+            console.log(`Email sent successfully to ${permit.user.email}`);
+          } else {
+            console.log(`Email failed to send: ${result.error}`);
+          }
+        })
+        .catch(err => console.log('Email sending error:', err.message));
       
-      if (emailResult.success) {
-        console.log(`Email notification sent successfully to ${permit.user.email} for status: ${status}`);
-      } else {
-        console.error(`Failed to send email notification: ${emailResult.error}`);
-      }
+      emailQueued = true;
     }
 
     res.status(200).json({ 
       message: `Permit status updated to ${status}`, 
       success: true,
-      emailSent: permit.user?.email ? true : false
+      emailQueued
     });
   } catch (error) {
     console.error("UpdateStatus Error:", error);
